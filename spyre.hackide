@@ -1,0 +1,8 @@
+context spyre
+
+task editor => vim .
+task sandbox => python ./py sandbox.py
+task shell => interactive_shell .
+
+layout (editor |30 (sandbox --30 shell))
+
