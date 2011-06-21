@@ -1,2 +1,6 @@
-from spyre.request import *
-from spyre.response import *
+from request import *
+from response import *
+from middleware import *
+
+# Yay, init !
+
