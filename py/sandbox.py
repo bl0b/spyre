@@ -4,35 +4,35 @@ import json
 
 spec = """
 {
-   "base_url" : "http://github.com/api/v2/",
-      "version" : "0.4",
-         "methods" : {
-                   "user_search" : {
-                                "path" : "/:format/user/search/:search",
-                                "method" : "GET",
-                                "required_params" : [
-                                                "format",
-                                                "search"
-                                             ]
-                             },
-                   "get_info" : {
-                                "path" : "/:format/user/show/:username",
-                                "method" : "GET",
-                                "required_params" : [
-                                                "format",
-                                                "username"
-                                             ]
-                             },
-                   "get_profile" : {
-                                "path" : "/:format/user/show",
-                                "method" : "GET",
-                                "required_params" : [
-                                                "format"
-                                             ],
-                                "authentication" : true
-                             }
-                }
-         }
+    "base_url" : "http://github.com/api/v2/",
+    "version" : "0.4",
+    "methods" : {
+        "user_search" : {
+            "path" : "/:format/user/search/:search",
+            "method" : "GET",
+            "required_params" : [
+                "format",
+                "search"
+            ]
+        },
+        "get_info" : {
+            "path" : "/:format/user/show/:username",
+            "method" : "GET",
+            "required_params" : [
+                "format",
+                "username"
+            ]
+        },
+        "get_profile" : {
+            "path" : "/:format/user/show",
+            "method" : "GET",
+            "required_params" : [
+                "format"
+            ],
+            "authentication" : true
+        }
+    }
+}
 """
 
 spec2 = """
@@ -60,6 +60,7 @@ class http_call_exception(Exception):
         Exception.__init__(self, *a, **k)
 
 
+http_call_fail_silently = True
 
 def http_call(spo, spec):
     class http_call_handler(object):
@@ -105,18 +106,27 @@ def http_call(spo, spec):
                 print arg_dic
             except http_call_exception, hce:
                 print hce
-                return None
+                if http_call_fail_silently:
+                    return None
+                else:
+                    raise hce
     return http_call_handler(spo)
 
 
-class spore(object):
-    def __init__(self, spec):
-        for method_name, method in spec['methods'].iteritems():
-            self.__setattr__(method_name, http_call(method))
 
 
-def make_adhoc_class(cspec):
-    pass
+class spore_meta(type):
+    def __init__(cls, name, bases, dic):
+        spec = dic['spore_spec']
+        # uncomment to clean spec off the class dictionary
+        #del spec['spore_spec']
+        if 'documentation' in spec:
+            dic['__doc__'] = spec['documentation']
+            dic['base_url'] = spec['base_url']
+            dic['version'] = spec['version']
+        for mspec in spec['methods']:
+            # franck DON'T TOUCH THIS AND BELOW !
+
 
 
 
