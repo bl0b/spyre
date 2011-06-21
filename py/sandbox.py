@@ -64,13 +64,14 @@ http_call_fail_silently = True
 
 safe = lambda d, k,t=None: k in d and d[k] or t
 
-def http_call(spo, spec):
+def http_call(name, spec):
     class http_call_handler(object):
         __doc__ = (""+safe(spec, 'documentation', '')+'\n'+spec['method']+' '+spec['path']).strip()
-        def __init__(self):
+        def __init__(self, name):
             self.im_func = self
             self.im_self = None
             self.im_class = http_call_handler
+            self.name = name
             self.req = spec['required_params'] # this one MUST NOT fail, so let the exception go
             self.opt = safe(spec, 'optional_params', [])
             self.authentication = safe(spec, 'authentication', False)=='true'
@@ -103,6 +104,11 @@ def http_call(spo, spec):
                 arg_dic = kwargs
             return arg_dic
 
+        def expand(self, txt, dic):
+            for k, v in dic.iteritems():
+                txt = v.join(txt.split(':'+k))
+            return txt
+
         def __call__(self, spo, *args, **kwargs):
             try:
                 arg_dic = self.__check_args(args, kwargs)
@@ -115,10 +121,13 @@ def http_call(spo, spec):
                 else:
                     raise hce
         def __get__(self, i, c):
-            return lambda *a, **k: self(i, *a, **k)
+            ret = lambda *a, **k: self(i, *a, **k)
+            ret.__doc__ = self.__doc__
+            ret.__name__ = str(self.name)
+            return ret
 
 
-    return http_call_handler()
+    return http_call_handler(name)
 
 
 
