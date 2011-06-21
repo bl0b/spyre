@@ -10,12 +10,11 @@ class Request:
         self.body = self.env['spore.payload']
         
     def finalize(self):
-        # build request
-        1
+        pass
 
     def secure(self):
-        self.scheme == 'https'
+        return self.scheme == 'https'
 
     def uri(self, path_info=None, query_string=None):
-        1
+        pass
 
