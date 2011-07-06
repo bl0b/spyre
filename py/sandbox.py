@@ -62,14 +62,19 @@ class http_call_exception(Exception):
 
 http_call_fail_silently = True
 
-def http_call(spo, spec):
+safe = lambda d, k,t=None: k in d and d[k] or t
+
+def http_call(name, spec):
     class http_call_handler(object):
-        __doc__ = ""+('documentation' in spec and spec['documentation'] or spec['method']+' '+spec['path'])
-        def __init__(self, spo):
-            self.spo = spo
-            self.req = spec['required_params']
-            self.opt = spec['optional_params']
-            self.authentication = 'authentication' in spec and spec['authentication']=='true' or False
+        __doc__ = (""+safe(spec, 'documentation', '')+'\n'+spec['method']+' '+spec['path']).strip()
+        def __init__(self, name):
+            self.im_func = self
+            self.im_self = None
+            self.im_class = http_call_handler
+            self.name = name
+            self.req = spec['required_params'] # this one MUST NOT fail, so let the exception go
+            self.opt = safe(spec, 'optional_params', [])
+            self.authentication = safe(spec, 'authentication', False)=='true'
         def __check_args(self, args, kwargs):
             arg_dic = None
             # if using unnamed arguments (assumedly ONLY unnamed arguments)
@@ -99,7 +104,12 @@ def http_call(spo, spec):
                 arg_dic = kwargs
             return arg_dic
 
-        def __call__(self, *args, **kwargs):
+        def expand(self, txt, dic):
+            for k, v in dic.iteritems():
+                txt = v.join(txt.split(':'+k))
+            return txt
+
+        def __call__(self, spo, *args, **kwargs):
             try:
                 arg_dic = self.__check_args(args, kwargs)
                 print "I should do some HTTP stuff but instead I'll print the method argument dictionary"
@@ -110,22 +120,42 @@ def http_call(spo, spec):
                     return None
                 else:
                     raise hce
-    return http_call_handler(spo)
+        def __get__(self, i, c):
+            ret = lambda *a, **k: self(i, *a, **k)
+            ret.__doc__ = self.__doc__
+            ret.__name__ = str(self.name)
+            return ret
+
+
+    return http_call_handler(name)
 
 
 
 
-class spore_meta(type):
-    def __init__(cls, name, bases, dic):
-        spec = dic['spore_spec']
-        # uncomment to clean spec off the class dictionary
-        #del spec['spore_spec']
-        if 'documentation' in spec:
-            dic['__doc__'] = spec['documentation']
-            dic['base_url'] = spec['base_url']
-            dic['version'] = spec['version']
-        for mspec in spec['methods']:
-            # franck DON'T TOUCH THIS AND BELOW !
+class spore_base(object):
+    def __init__(self):
+        for mname in self.spore_spec:
+            self.__getattr__(mname).__get__(self)
+
+def spore(name, spec=None, **named):
+    if not spec:
+        spec = named
+    # uncomment to override spec with given named args
+    #spec.update(named)
+    dic = {
+        'SPoREwashere': 42,
+        '__doc__': safe(spec, 'documentation', '')+'\n'+str(spec),
+        'version': safe(spec, 'version', 'please specify me'),
+        'base_url': safe(spec, 'base_url', 'perdu.com'),
+        'spore_spec': spec
+    }
+    if 'methods' in spec:
+        for mname, mspec in spec['methods'].iteritems():
+            hc = http_call(mname, mspec)
+            dic[mname] = hc
+            #dic[mname] = lambda self, *a, **k: hc(self, *a, **k)
+    return type(name, (spore_base,), dic)
+
 
 
 
