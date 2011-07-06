@@ -86,6 +86,14 @@ spec2 = """
 #
 
 
+class perlish(dict):
+    def __init__(self, target):
+        self.target = target
+    def __getitem__(self, key):
+        #try:
+            return type.__getattribute__(self.target, key)
+        #except AttributeError, ae:
+        #    raise KeyError(key)
 
 
 class http_call_exception(Exception):
@@ -139,6 +147,8 @@ def http_call(name, spec):
             self.req = spec['required_params'] # this one MUST NOT fail, so let the exception go
             self.opt = safe(spec, 'optional_params', [])
             self.authentication = safe(spec, 'authentication', False)=='true'
+            self.path = spec['path']
+            self.method = spec['method']
 
         def __check_args(self, args, kwargs):
             return validate_arguments(self, args, kwargs)
@@ -153,6 +163,10 @@ def http_call(name, spec):
                 arg_dic = self.__check_args(args, kwargs)
                 print "I should do some HTTP stuff but instead I'll print the method argument dictionary"
                 print arg_dic
+                spo._exec_call(request(method=self.method, url=self.expand(self.path, arg_dic)))
+            except response, resp:
+                return resp
+
             except http_call_exception, hce:
                 print hce
                 if http_call_fail_silently:
@@ -177,8 +191,29 @@ class spore_base(object):
         self.middlewares = []
         for mname in self.spore_spec:
             self.__getattr__(mname).__get__(self)
-    def reg_middleware(self, x):
-        self.middlewares.append(x)
+    def _iter_middlewares(self, req):
+        return (mw_func(req) for mw_pred, mw_func in self.middlewares if mw_pred(req))
+    def _run_middlewares(self, req, mwlist):
+        return map(lambda mw: mw(req), mwlist)
+    def enable(self, middleware, **kwargs):
+        self.enable_if(lambda req: True, middleware, **kwargs)
+    def enable_if(self, predicate, middleware, **kwargs):
+        if type(middleware) is str:
+            midmod = __import__(middleware, fromlist=['new']) # we actually get the whole module, the whole namespace
+            self.middlewares.append( (predicate, midmod.new(**kwargs)) )
+        elif callable(middleware):
+            self.middlewares.append( (predicate, middleware(**kwargs)) )
+        else:
+            raise ValueError(middleware)
+    def _exec_call(self, req):
+        resp_callbacks = self._run_middlewares(req, self._iter_middlewares(req))
+        # perform actual call with req
+        resp = None#FIXME
+        self._run_middlewares(resp, reversed(resp_callbacks))
+        return resp
+
+
+
 
 def new_from_spec(name, spec=None, **named):
     if not spec:
