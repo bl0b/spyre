@@ -1,24 +1,21 @@
-class spore(object):
-    def __init__(self):
-        pass
-
-    def http_call():
-        class http_call_handler(object):
-            def __init__(self,spo):
-                pass
-
-            def __call__(self, *args,**kwargs):
-                print "pouet"
-
-class spore_meta(type):
-    def __init__(class, name, bases, dic):
-        spec = dic['spore_desc']
-        if 'documentation' in spec:
-            dic['__doc__'] = spec['documentation']
-            dic['base_url'] = spec['base_url']
-            dic['version'] = spec['version']
-        for mspec in spec['methods']:
+def spore_method(name, spec):
+    class spore_method_handler(object):
+        def __init__(self, name):
             pass
-        
-        
-        
+
+def new_from_spec(name, spec=None, **named):
+    if not spec:
+        spec = named
+    dic = {
+        'spore_spec': spec,
+    }
+    if 'methods' in spec:
+        for mname, mspec in spec['methods'].iteritems():
+            spore_method = spore_method(mname, mspec)
+            dic[mname] = spore_method
+    return type(name, (spore_base,), dic)
+
+class spore_meta(object):
+    def __init__(class, name, bases, dic):
+        for mname in self.spore_spec:
+            self.__getattr__(mname).__get__(self)
