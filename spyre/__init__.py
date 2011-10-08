@@ -1,9 +1,9 @@
 import __future__
+import json
+from spyre import spyrecore
+
 
 class spyre(object):
-    def __init__(self):
-        pass
-
     @classmethod
     def new_from_spec(cls, spec):
         pass
