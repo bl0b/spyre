@@ -12,8 +12,13 @@ class TestSpyre(TestCase):
     def test_without_spec(self):
         self.assertRaises(RuntimeError, Spyre.new_from_spec, ('spec'))
 
+    def test_create_without_base_url(self):
+        # XXX
+        pass
+
     def test_create_from_spec(self):
-        spore = Spyre().new_from_spec(spec) 
+        base_url = 'http://github.com/api/v2/'
+        spore = Spyre().new_from_spec(spec, base_url) 
         self.assertTrue(spore)
         self.assertEqual(spore.name, "Test API")
         self.assertEqual(spore.get_info({}), 5)
