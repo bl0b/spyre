@@ -16,4 +16,4 @@ class TestSpyre(TestCase):
         spore = Spyre().new_from_spec(spec) 
         self.assertTrue(spore)
         self.assertEqual(spore.name, "Test API")
-        self.assertEqual(spore.get_info(), 5)
+        self.assertEqual(spore.get_info({}), 5)
