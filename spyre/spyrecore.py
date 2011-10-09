@@ -24,18 +24,35 @@ class spyremethod(object):
     def __init__(self, name, desc):
         self.name = name
 
-        if 'method' not in desc:
-            raise errors.SpyreMethodBuilder('path')
+        self.method = None
+        self.path = None
+        self.required_params = []
+        self.optional_params = []
 
-        self.method = desc['method']
-        self.path = desc['path']
+        self._init_args(desc)
+
+    def _init_args(self, desc):
+
+        required_attr = ['method', 'path']
+        optional_attr = ['required_params', 'optional_params']
+
+        for attr in required_attr:
+            if attr not in desc:
+                raise errors.SpyreMethodBuilder(attr)
+            setattr(self, attr, desc[attr])
+
+        for attr in optional_attr:
+            if attr in desc:
+                setattr(self, attr, desc[attr])
 
     def __call__(self, args):
 
         payload = self._build_payload(args)
 
-        # XXX build url
+        self._check_required_params(args)
+
         base_url = self._base_url()
+
         # XXX build auth
         auth = self._build_auth()
         params = self._build_params()
@@ -82,6 +99,16 @@ class spyremethod(object):
             #delete args['payload']
 
         if payload and re.match(r"^P(OS|U)T$"):
-            raise "NON"
+            raise errors.SpyreMethodPayload()
+
+        # XXX check if payload is required
 
         return payload
+
+    def _check_required_params(self, args):
+        if len(self.required_params) < 1:
+            return
+
+        for param in self.required_params:
+            if param not in args:
+                raise errors.SpyreMethodCall(param)
