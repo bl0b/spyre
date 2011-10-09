@@ -6,9 +6,9 @@ from spyre import spyrecore
 class Spyre(object):
 
     @classmethod
-    def new_from_spec(cls, spec_file, **args):
+    def new_from_spec(cls, spec_file, base_url=None):
         json = cls._read_from_file(spec_file)
-        spore = spyrecore.spyrecore(json)
+        spore = spyrecore.spyrecore(json, base_url)
         return spore
 
     @classmethod
