@@ -22,6 +22,8 @@ class TestSpyreMethod(TestCase):
         method_desc['path'] = '/:username'
         method = spyrecore.spyremethod(method_name, method_desc, base_url)
         self.assertTrue(method)
+        resp = method({})
+        self.assertEqual(resp.status, '404')
 
     def test_optional_attr(self):
         method_name = 'test'

@@ -77,10 +77,11 @@ class spyremethod(object):
         params = self._build_params()
         formats = self._build_formats()
 
+        # XXX port
         env = {
                 'REQUEST_METHOD': self.method,
                 'SERVER_NAME': base_url.hostname,
-                'SERVER_PORT': base_url.port,
+                'SERVER_PORT': 80,
                 'SCRIPT_NAME': base_url.path,
                 'PATH_INFO': self.path,
                 'REQUEST_URI': '',
@@ -91,13 +92,13 @@ class spyremethod(object):
                 'spore.params': params,
                 'spore.payload': payload,
                 'spore.errors': '',
-                'spore.url_scheme': base_url,
+                'spore.url_scheme': base_url.scheme,
                 'spore.userinfo': base_url,
                 'spore.formats': formats,
                 }
 
-        http_response = request.spyrerequest(env)
-        print http_response
+        http_response = request.spyrerequest(env).execute()
+        return http_response
         #my $code = $response->status;
 
         #my $ok = ($method->has_expected_status)
@@ -106,7 +107,7 @@ class spyremethod(object):
         #die $response if not $ok;
 
         #$response;
-        return 5
+        #return 5
 
     def _build_auth(self):
         pass

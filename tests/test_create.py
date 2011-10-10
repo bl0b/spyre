@@ -1,5 +1,6 @@
 from unittest2 import TestCase
 from spyre import Spyre
+from spyre import response
 import os.path
 
 
@@ -21,4 +22,5 @@ class TestSpyre(TestCase):
         spore = Spyre().new_from_spec(spec, base_url) 
         self.assertTrue(spore)
         self.assertEqual(spore.name, "Test API")
-        self.assertEqual(spore.get_info({}), 5)
+        resp = spore.get_info({})
+        self.assertIsInstance(resp, response.spyreresponse)
