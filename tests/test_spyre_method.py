@@ -30,12 +30,12 @@ class TestSpyreMethod(TestCase):
 
         method_desc['path'] = '/user/:username'
         method_desc['required_params'] = ['username']
-        method_desc['expected_status'] = [200, 404]
+        method_desc['expected_status'] = [200, 404, 406]
 
         method = Method(method_name, method_desc, base)
         self.assertTrue(method)
         resp = method(username='bar')
-        self.assertEqual(resp.status, '404')
+        self.assertEqual(resp.status, '406')
 	self.assertTrue(False)
 
     def test_optional_attr(self):

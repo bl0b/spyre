@@ -105,17 +105,17 @@ class Method(object):
 
         http_response = self._execute_http_request(final_url)
 
-        #if self.expected_status:
-            #http_status = int(http_response.status)
-            #request_pass = False
-            #for exp_status in self.expected_status:
-                #if exp_status == http_status:
-                    #request_pass = True
-            #if request_pass is False:
-                #raise errors.SpyreStatusInvalid()
+        if self.expected_status:
+            http_status = int(http_response.status)
+            request_pass = False
+            for exp_status in self.expected_status:
+                if exp_status == http_status:
+                    request_pass = True
+            if request_pass is False:
+                raise errors.SpyreStatusInvalid()
 
-        #for cb in cb_response:
-            #cb(http_response)
+        for cb in cb_response:
+            cb(http_response)
 
         return http_response
 
