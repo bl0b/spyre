@@ -1,30 +1,33 @@
 import __future__
-import json
-from spyre import spyrecore
+from spyre import core
 
 
 class Spyre(object):
 
     @classmethod
     def new_from_spec(cls, spec_file, base_url=None):
-        json = cls._read_from_file(spec_file)
-        spore = spyrecore.spyrecore(json, base_url)
+        spec_string = cls._read_from_file(spec_file)
+        spore = cls.new_from_string(spec_string, base_url)
         return spore
 
     @classmethod
-    def new_from_string(cls, spec):
-        pass
+    def new_from_string(cls, spec_string, base_url=None):
+        spore = core.base(spec_string=spec_string, base_url=base_url)
+        return spore
 
     @classmethod
     def new_from_dict(cls, dict):
         pass
 
     @classmethod
+    def new_from_url(cls, spec_url):
+        pass
+
+    @classmethod
     def _read_from_file(cls, spec_file):
-        spec = None
         try:
-            f = open(spec_file)
-            spec = json.load(f)
+            f = open(spec_file, 'r')
+            spec = f.read()
             f.close()
         except Exception, e:
             raise RuntimeError("Error while loading JSON spec (%s): %s"
