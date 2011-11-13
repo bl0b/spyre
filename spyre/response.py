@@ -1,4 +1,4 @@
-class spyreresponse(object):
+class Response(object):
 
     def __init__(self, env, status, resp, content):
         self.env = env

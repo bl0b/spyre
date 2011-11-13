@@ -1,8 +1,8 @@
 import httplib2
-from spyre import response
+from spyre.response import Response
 
 
-class spyrerequest(object):
+class Request(object):
     def __init__(self, env):
         self.env = env
 
@@ -14,7 +14,7 @@ class spyrerequest(object):
         h = httplib2.Http()
         resp, content = h.request(final_url, self.env['REQUEST_METHOD'])
         status = resp['status']
-        http_response = response.spyreresponse(self.env, status, resp, content)
+        http_response = Response(self.env, status, resp, content)
         return http_response
 
     def _construct_url(self):
