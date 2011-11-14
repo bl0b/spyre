@@ -4,7 +4,6 @@ from spyre.response import Response
 from spyre import errors
 import os.path
 
-
 MY_DIR = os.path.dirname(__file__)
 spec_file = MY_DIR + "/specs/api.json"
 base_url = 'http://api.github.com/v2/'
