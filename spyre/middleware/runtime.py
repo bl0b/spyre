@@ -15,5 +15,3 @@ class runtime(Middleware):
     def response_cb(self, start_time, response):
         req_time = datetime.datetime.now() - start_time
         response.env['X-Spore-RunTime'] = str(req_time)
-
-        
