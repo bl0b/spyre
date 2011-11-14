@@ -1,9 +1,8 @@
 import __future__
 import re
-import httplib2
 from urlparse import urlparse
 from spyre import errors
-from spyre.response import Response
+from spyre.request import Request
 
 
 class Method(object):
@@ -73,10 +72,20 @@ class Method(object):
         else:
             userinfo = None
 
+        if base_url.port is None:
+            if base_url.scheme == 'http':
+                port = 80
+            elif base_url.scheme == 'https':
+                port = 443
+            else:
+                raise "houla"
+        else:
+            port = base_url.port
+
         env = {
             'REQUEST_METHOD': self.method,
             'SERVER_NAME': base_url.hostname,
-            'SERVER_PORT': base_url.port or 80,
+            'SERVER_PORT': port,
             'SCRIPT_NAME': script_name,
             'PATH_INFO': self.path,
             'REQUEST_URI': '',
@@ -92,18 +101,13 @@ class Method(object):
             'spore.formats': formats,
         }
 
-        self.env = env
-
         for mw in self.spore_obj.middlewares:
             if mw[0](env):
                 cb = mw[1](env)
                 if cb:
                     cb_response.append(cb)
 
-        env['PATH_INFO'] = self.expand(env.get('PATH_INFO'), params)
-        final_url = self._construct_url()
-
-        http_response = self._execute_http_request(final_url)
+        http_response = Request(env).execute()
 
         if self.expected_status:
             http_status = int(http_response.status)
@@ -118,21 +122,6 @@ class Method(object):
             cb(http_response)
 
         return http_response
-
-    def _construct_url(self):
-        final_url = ("%s://%s:%i%s" % (self.env['spore.url_scheme'],
-            self.env['SERVER_NAME'], self.env['SERVER_PORT'],
-            self.env['SCRIPT_NAME']))
-
-        path_info = self.env.get('PATH_INFO');
-        final_url = ('%s%s' % (final_url, path_info))
-
-        return final_url
-
-    def expand(self, txt, dic):
-        for k, v in dic.iteritems():
-            txt = v.join(txt.split(':'+k))
-        return txt
 
     def _build_parameters(self, kwargs):
         kset = set(kwargs.iterkeys())
@@ -157,20 +146,6 @@ class Method(object):
     def _base_url(self):
         pass
 
-    def _execute_http_request(self, final_url):
-        h = httplib2.Http()
-        resp, content = h.request(final_url, self.env.get('REQUEST_METHOD'))
-
-        status = resp['status']
-        http_response = Response(self.env, status, resp, content)
-
-        return http_response
-
-    #def _build_params(self, args):
-        #print args
-        #kset = set(args.iterkeys())
-        #return kset
-
     def _build_formats(self):
         pass
 
@@ -189,11 +164,3 @@ class Method(object):
             raise errors.SpyreMethodPayload()
 
         return payload
-
-    #def _check_required_params(self, args):
-        #if len(self.required_params) < 1:
-            #return
-
-        #for param in self.required_params:
-            #if param not in args:
-                #raise errors.SpyreMethodCall(param)
