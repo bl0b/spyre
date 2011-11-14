@@ -1,5 +1,7 @@
 import __future__
 from spyre import core
+from spyre.errors import *
+import os.path
 
 
 class Spyre(object):
@@ -12,7 +14,10 @@ class Spyre(object):
 
     @classmethod
     def new_from_string(cls, spec_string, base_url=None):
-        spore = core.base(spec_string=spec_string, base_url=base_url)
+        try:
+            spore = core.base(spec_string=spec_string, base_url=base_url)
+        except Exception, e:
+            raise SpyreObjectBuilder(e)
         return spore
 
     @classmethod
@@ -25,6 +30,10 @@ class Spyre(object):
 
     @classmethod
     def _read_from_file(cls, spec_file):
+        if os.path.exists(spec_file) == False:
+            raise SpyreObjectBuilder("Spec file %s does not exists" %
+                    spec_file)
+
         try:
             f = open(spec_file, 'r')
             spec = f.read()
