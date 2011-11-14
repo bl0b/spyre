@@ -7,7 +7,7 @@ import os.path
 
 MY_DIR = os.path.dirname(__file__)
 spec_file = MY_DIR + "/specs/api.json"
-base_url = 'http://github.com/api/v2'
+base_url = 'https://api.github.com/'
 f = open(spec_file, 'r')
 spec_str = f.read()
 f.close()
@@ -28,14 +28,14 @@ class TestSpyreMethod(TestCase):
                 Method, method_name,
                 method_desc, base)
 
-        method_desc['path'] = '/user/:username'
+        method_desc['path'] = '/users/:username'
         method_desc['required_params'] = ['username']
         method_desc['expected_status'] = [200, 404, 406]
 
         method = Method(method_name, method_desc, base)
         self.assertTrue(method)
-        resp = method(username='bar')
-        self.assertEqual(resp.status, '406')
+        resp = method(username='franckcuny')
+        self.assertEqual(resp.status, '200')
 	self.assertTrue(False)
 
     def test_optional_attr(self):
