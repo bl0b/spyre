@@ -17,16 +17,20 @@ class Request(object):
             self.env['SERVER_NAME'], self.env['SERVER_PORT'],
             self.env['SCRIPT_NAME']))
 
-        path_info = self.env.get('PATH_INFO');
+        path_info = self.env.get('PATH_INFO')
         final_url = ('%s%s' % (final_url, path_info))
 
         return final_url
 
     def expand(self, key_name):
-        dic = self.env.get('spore.params')
+        dic = self.env.get('spore.params', None)
+
+        if dic is None:
+            return
+
         txt = self.env.get(key_name)
         for k, v in dic.iteritems():
-            txt = v.join(txt.split(':'+k))
+            txt = v.join(txt.split(':' + k))
         return txt
 
     def _execute_http_request(self, final_url):
@@ -37,4 +41,3 @@ class Request(object):
         http_response = Response(self.env, status, resp, content)
 
         return http_response
-

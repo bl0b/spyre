@@ -3,6 +3,7 @@ import json
 from spyre import errors
 from spyre.method import Method
 
+
 class base(object):
 
     authentication = None
@@ -24,14 +25,14 @@ class base(object):
     # XXX method to list available SPORE methods
     # XXX method to search for a given method
     def _init_meta(self, spec, base_url=None):
-        self.name = spec['name'] # XXX see later what to do with this
+        self.name = spec['name']  # XXX see later what to do with this
 
         if base_url is None:
             base_url = spec.get('base_url', None)
             if base_url is None:
                 raise errors.SpyreObjectBuilder('base_url is missing')
         self.base_url = base_url
-        
+
         formats = spec.get('formats', None)
         authentication = spec.get('authentication', None)
 
@@ -50,7 +51,7 @@ class base(object):
         try:
             new_method = Method(method_name, method_desc, self)
         except Exception, e:
-            raise RuntimeError("foo") # XXX meh
+            raise RuntimeError("foo")  # XXX meh
 
         setattr(self, method_name, new_method)
         self._methods.append(method_name)

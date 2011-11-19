@@ -129,7 +129,8 @@ class Method(object):
         optional = set(self.optional_params)
         params = required.union(optional)
 
-        stuff_remains = kset.difference(self.required_params + self.optional_params)
+        stuff_remains = kset.difference(
+            self.required_params + self.optional_params)
         if stuff_remains:
             raise errors.SpyreMethodCall(stuff_remains)
 
@@ -159,6 +160,7 @@ class Method(object):
         if payload is None:
             return
 
+        # XXX delete payload param from args
         # XXX add support for PATCH ? (same for N::H::Spore)
         if payload and re.match(r"^P(OS|U)T$", payload):
             raise errors.SpyreMethodPayload()
