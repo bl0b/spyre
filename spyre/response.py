@@ -1,18 +1,34 @@
 class Response(object):
 
-    def __init__(self, env, status, resp, content):
+    is_success = False
+
+    def __init__(self, env, status=200, headers=None, content=None):
         self.env = env
+        self._headers = headers
+
         self.status = status
         self.code = status
-        self.resp = resp
-        self.content = content
-        self.content_type = resp.get('content-type')
-        self.content_length = resp.get('content-length')
 
-        if status >= 200 and status < 300:
+        if self._headers is not None:
+            self.content_type = self._headers.get('content-type', None)
+            self.content_length = self._headers.get('content-length', 0)
+
+        if content is not None:
+            self.content = content
+            self.body = content
+            self.raw_body = content
+
+        if self.status >= 200 and self.status < 300:
             self.is_success = True
-        else:
-            self.is_success = False
 
-    def finalize(self):
-        pass
+    def header(self, header_name):
+        if self._headers is None:
+            return None
+        else:
+            return self._headers.get(header_name, None)
+
+    def headers(self):
+        if self._headers is None:
+            return {}
+        headers = self._headers.keys()
+        return headers
