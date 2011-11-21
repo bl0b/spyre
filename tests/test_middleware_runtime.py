@@ -15,5 +15,5 @@ class TestSpyreMiddlewareRuntime(TestCase):
         base_url = 'http://github.com/api/v2/'
         spore = Spyre.new_from_spec(spec, base_url)
         spore.enable('runtime')
-        spore.get_user_info({'user': 'foo'})
-        self.assertTrue(False)
+        res = spore.get_user_info(username='franckcuny')
+        self.assertTrue(res)

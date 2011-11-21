@@ -36,7 +36,6 @@ class TestSpyreMethod(TestCase):
         self.assertTrue(method)
         resp = method(username='franckcuny')
         self.assertEqual(resp.status, '200')
-	self.assertTrue(False)
 
     def test_optional_attr(self):
         method_name = 'test'
