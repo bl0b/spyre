@@ -2,6 +2,7 @@ import httplib2
 import urllib
 import re
 from spyre.response import Response
+from itertools import izip
 
 
 class Request(object):
@@ -85,44 +86,23 @@ class Request(object):
         headers = self.env.get('spore.headers', None)
         form_data = self.env.get('spore.form_data', None)
 
-        query_str = None
+        query = []
         form = {}
+        headers = []
 
-        #for k, v in izip(params[::2], params[1::2]):
-
-        print params
-        max = len(params)
-        i = 0
-        while i <= (max - 1):
-            modified = 0
-            k = params[i]
-            v = None
-            if i < (max - 1):
-                i += 1
-                v = params[i]
-
-            if path_info and v:
-                (path_info, changes) = re.subn(re.compile(":%s" %k), v, path_info)
+        for k, v in izip(params[::2], params[1::2]):
+            if path_info:
+                (path_info, changes) = re.subn(re.compile(":%s" % k), v, path_info)
                 if changes:
-                    modified = 1
-                    i += 1
                     continue
 
-            if query_str is None:
-                query_str = "%s" % k
-            else:
-                query_str = "%s&%s" % (query_str, k)
-
-            if v:
-                query_str = "%s=%s" % (query_str, v)
-
-            i += 1
+            query.append("%s=%s" % (k,v))
 
         path_info = re.sub(":\w+", '', path_info)
         self.path(path_info)
 
-        if query_str is not None:
-            self.env['QUERY_STRING'] = query_str
+        if query:
+            self.env['QUERY_STRING'] = '&'.join(query)
 
     def _execute_http_request(self, final_url):
         h = httplib2.Http(disable_ssl_certificate_validation=True)
