@@ -9,11 +9,11 @@ class Request(object):
         self.env = env
 
     def execute(self):
-        final_url = self.finalize()
+        final_url = self._finalize()
         http_response = self._execute_http_request(final_url)
         return http_response
 
-    def finalize(self):
+    def _finalize(self):
         self._expand()
         final_url = self.base()
         query_string = self.env.get('QUERY_STRING', None)

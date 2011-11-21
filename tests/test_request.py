@@ -42,4 +42,4 @@ class TestSpyreRequest(TestCase):
                 for k,v in test['add_env'].iteritems():
                     env[k] = v
             req = Request(env)
-            self.assertEqual(req.finalize(), test['uri'])
+            self.assertEqual(req._finalize(), test['uri'])
