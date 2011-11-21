@@ -1,0 +1,13 @@
+{
+    "name": "Test API",
+    "base_url": "https://api.github.com/",
+    "methods" : {
+        "get_user_info" : {
+            "required_params" : [
+                "username"
+            ],
+            "path" : "/users/:username",
+            "method" : "GET"
+        }
+    }
+}
