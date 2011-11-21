@@ -6,3 +6,5 @@
 
    install
    tutorial
+   request
+   response

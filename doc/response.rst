@@ -14,7 +14,7 @@ Response
 .. attribute:: response.content
 
     Return the body of the response. This body may be modified by a middleware.
-    
+
 .. attribute:: response.body
 
     Same as ``response.content``.
