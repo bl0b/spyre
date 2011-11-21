@@ -138,8 +138,11 @@ class Method(object):
         if missing_req:
             raise errors.SpyreMethodCall(missing_req)
 
-        arg_dic = kwargs
-        return arg_dic
+        params = []
+        for k,v in kwargs.iteritems():
+            params.append(k)
+            params.append(v)
+        return params
 
     def _build_auth(self):
         pass
