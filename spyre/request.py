@@ -5,7 +5,25 @@ from spyre.response import Response
 from itertools import izip
 
 
+def _requestproperty(key, default=None):
+
+    def fget(self):
+        return self.env.get(key, default)
+
+    def fset(self, value):
+        self.env[key] = value
+        return value
+
+    return property(fget, fset)
+
+
 class Request(object):
+
+    port = _requestproperty('SERVER_PORT', 80)
+    host = _requestproperty('SERVER_NAME', '')
+    path = _requestproperty('PATH_INFO', '')
+    scheme = _requestproperty('spore.url_scheme', 'http')
+
     def __init__(self, env):
         self.env = env
 
@@ -22,51 +40,23 @@ class Request(object):
             final_url = "%s?%s" % (final_url, query_string)
         return final_url
 
-    def host(self, host=None):
-        if host is None:
-            host = self.env.get('SERVER_NAME', '')
-        else:
-            self.env['SERVER_NAME'] = host
-        return host
-
-    def port(self, port=None):
-        if port is None:
-            port = self.env.get('SERVER_PORT', 80)
-        else:
-            self.env['SERVER_PORT'] = port
-        return port
-
-    def script_name(self, script_name=None):
-        if script_name is None:
-            script_name = self.env.get('SCRIPT_NAME', '')
-            if script_name == '' and self._path_info_start_with_slash() is False:
-                script_name = '/'
-        else:
-            self.env['SCRIPT_NAME'] = script_name
+    @property
+    def script_name(self):
+        script_name = self.env.get('SCRIPT_NAME', '')
+        if script_name == '' and self._path_info_start_with_slash() is False:
+            script_name = '/'
         return script_name
 
+    @property
     def http_host(self):
         host = self.env.get('HTTP_HOST', None)
         if host is None:
-            host = ("%s:%i" % (self.host(), self.port()))
+            host = ("%s:%i" % (self.host, self.port))
         return host
 
-    def scheme(self, scheme=None):
-        if scheme is None:
-            scheme = self.env.get('spore.url_scheme', 'http')
-        else:
-            self.env['spore.url_scheme'] = scheme
-        return scheme
-
-    def path(self, path_info=None):
-        if path_info is None:
-            path_info = self.env.get('PATH_INFO', '')
-        else:
-            self.env['PATH_INFO'] = path_info
-        return path_info
-
     def base(self):
-        final_url = ("%s://%s%s%s" % (self.scheme(), self.http_host(), urllib.quote(self.script_name(), '/'), urllib.quote(self.path(), '/')))
+        final_url = ("%s://%s%s%s" % (self.scheme, self.http_host,
+            urllib.quote(self.script_name, '/'), urllib.quote(self.path, '/')))
         return final_url
 
     def _path_info_start_with_slash(self):
@@ -82,7 +72,7 @@ class Request(object):
         if params is None:
             return
 
-        path_info = self.path()
+        path_info = self.path
         headers = self.env.get('spore.headers', None)
         form_data = self.env.get('spore.form_data', None)
 
@@ -99,7 +89,7 @@ class Request(object):
             query.append("%s=%s" % (k,v))
 
         path_info = re.sub(":\w+", '', path_info)
-        self.path(path_info)
+        self.path = path_info
 
         if query:
             self.env['QUERY_STRING'] = '&'.join(query)
