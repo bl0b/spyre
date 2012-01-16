@@ -8,6 +8,13 @@
             ],
             "path" : "/users/:username",
             "method" : "GET"
+        },
+        "attach_file": {
+            "path":"/file",
+            "method":"POST",
+            "headers": {
+              "content-type":":content_type"
+            }
         }
     }
 }
