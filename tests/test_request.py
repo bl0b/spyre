@@ -42,4 +42,11 @@ class TestSpyreRequest(TestCase):
                 for k,v in test['add_env'].iteritems():
                     env[k] = v
             req = Request(env)
-            self.assertEqual(req.finalize(), test['uri'])
+            self.assertEqual(req._finalize(), test['uri'])
+
+    #def test_populate_headers(self):
+        #test_data_headers = self._get_test_data('headers')
+
+        #for test in test_data_headers:
+            #req = Request(env)
+            #req._finalize()
