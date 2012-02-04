@@ -1,5 +1,5 @@
 from unittest2 import TestCase
-from spyre import Spyre
+from spyre import new_from_spec, new_from_string
 from spyre.response import Response
 from spyre import errors
 import os.path
@@ -12,15 +12,15 @@ base_url = 'http://api.github.com/v2/'
 class TestSpyre(TestCase):
 
     def test_without_base_url_as_arguement(self):
-        spore = Spyre.new_from_spec(spec_file)
+        spore = new_from_spec(spec_file)
         self.assertTrue(spore)
         self.assertEqual(spore.base_url, "https://api.github.com/")
 
     def test_without_spec(self):
-        self.assertRaises(errors.SpyreObjectBuilder, Spyre.new_from_string, ('spec'))
+        self.assertRaises(errors.SpyreObjectBuilder, new_from_string, ('spec'))
 
     def test_new_from_spec(self):
-        spore = Spyre.new_from_spec(spec_file, base_url)
+        spore = new_from_spec(spec_file, base_url)
 
         self.assertTrue(spore)
         self.assertEqual(spore.base_url, base_url)
@@ -33,8 +33,8 @@ class TestSpyre(TestCase):
         f = open(spec_file, 'r')
         spec_str = f.read()
         f.close()
-        spore = Spyre.new_from_string(spec_str)
+        spore = new_from_string(spec_str)
         self.assertTrue(spore)
 
     def test_inexisting_spec(self):
-        self.assertRaises(errors.SpyreObjectBuilder, Spyre.new_from_spec, ('foo'))
+        self.assertRaises(errors.SpyreObjectBuilder, new_from_spec, ('foo'))

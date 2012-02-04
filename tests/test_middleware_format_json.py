@@ -1,5 +1,5 @@
 from unittest2 import TestCase
-from spyre import Spyre
+from spyre import new_from_spec
 import spyre.middleware
 import spyre.middleware.formatjson
 import os.path
@@ -11,7 +11,7 @@ spec = MY_DIR + "/specs/api.json"
 class TestSpyreMiddlewareFormatJSON(TestCase):
 
     def test_simple(self):
-        spore = Spyre.new_from_spec(spec)
+        spore = new_from_spec(spec)
         spore.enable('formatjson')
         resp = spore.get_user_info(username='franckcuny')
         self.assertEqual(resp.content['name'], 'franck')

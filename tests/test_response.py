@@ -1,5 +1,5 @@
 from unittest2 import TestCase
-from spyre import spyrecore
+import spyre.core
 from spyre import errors
 from spyre.response import Response
 
