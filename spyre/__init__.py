@@ -1,6 +1,6 @@
 import __future__
-from spyre import core
-from spyre.errors import *
+from core import base
+from errors import *
 import os.path
 
 
@@ -12,13 +12,10 @@ def new_from_spec(spec_file, base_url=None):
 
 def new_from_string(spec_string, base_url=None):
     try:
-        spore = core.base(spec_string=spec_string, base_url=base_url)
+        spore = base(spec_string=spec_string, base_url=base_url)
     except Exception, e:
         raise SpyreObjectBuilder(e)
     return spore
-
-# TODO new_from_url
-# TODO new_from_dict
 
 
 def _read_from_file(spec_file):
