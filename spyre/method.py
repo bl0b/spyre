@@ -1,15 +1,26 @@
 import __future__
 import re
-from urlparse import urlparse
+from http import Url
 from spyre import errors
 from spyre.request import Request
 
 
 class Method(object):
-    def __init__(self, name, desc, spore_obj):
+
+    required_attr = ['method', 'path']
+    optional_attr = [
+        'required_params',
+        'optional_params',
+        'expected_status',
+    ]
+
+    def __init__(self, name, desc, base_url, user_agent, middlewares=None):
         self.name = name
-        self.spore_obj = spore_obj
-        self.middlewares = []
+        self.user_agent = user_agent
+
+        if middlewares is None:
+            middlewares = []
+        self.middlewares = middlewares
 
         self.path = None
         self.method = None
@@ -25,32 +36,52 @@ class Method(object):
         self.optional_params = []
         self.expected_status = []
 
-        self.base_url = desc.get('base_url', self.spore_obj.base_url)
+        self.base_url = desc.get('base_url', base_url)
 
         self._init_args(desc)
 
     def _init_args(self, desc):
+        self._required_attributes(desc)
+        self._optional_attirbutes(desc)
 
-        required_attr = ['method', 'path']
-        optional_attr = [
-            'required_params',
-            'optional_params',
-            'expected_status',
-        ]
-
-        for attr in required_attr:
+    def _required_attributes(self, desc):
+        for attr in self.required_attr:
             if attr not in desc:
                 raise errors.SpyreMethodBuilder(attr)
             setattr(self, attr, desc[attr])
 
-        for attr in optional_attr:
+    def _optional_attirbutes(self, desc):
+        for attr in self.optional_attr:
             if attr in desc:
                 setattr(self, attr, desc[attr])
+
+    def _script_name(self, base_url):
+        if base_url.path == '/':
+            return ''
+        else:
+            return base_url.path
+
+    def _userinfo(self, base_url):
+        if base_url.username is not None:
+            return ('%s:%s' % (base_url.username, base_url.password))
+        else:
+            return None
+
+    def _port(self, base_url):
+        if base_url.port is not None:
+            return base_url.port
+
+        if base_url.scheme == 'http':
+            return 80
+        elif base_url.scheme == 'https':
+            return 443
+        else:
+            raise "houla"
 
     def __call__(self, **kwargs):
 
         if self.base_url is None:
-            raise errors.SpyreMethodCall("meh")
+            raise errors.SpyreMethodCall("`base_url` is missing")
 
         cb_response = []
 
@@ -60,31 +91,15 @@ class Method(object):
         auth = self._build_auth()
         formats = self._build_formats()
 
-        base_url = urlparse(self.base_url)
+        base_url = Url(string_url=self.base_url)
 
-        if base_url.path == '/':
-            script_name = ''
-        else:
-            script_name = base_url.path
-
-        if base_url.username is not None:
-            userinfo = ('%s:%s' % (base_url.username, base_url.password))
-        else:
-            userinfo = None
-
-        if base_url.port is None:
-            if base_url.scheme == 'http':
-                port = 80
-            elif base_url.scheme == 'https':
-                port = 443
-            else:
-                raise "houla"
-        else:
-            port = base_url.port
+        script_name = self._script_name(base_url)
+        userinfo = self._userinfo(base_url)
+        port = self._port(base_url)
 
         env = {
             'REQUEST_METHOD': self.method,
-            'SERVER_NAME': base_url.hostname,
+            'SERVER_NAME': base_url.netloc,
             'SERVER_PORT': port,
             'SCRIPT_NAME': script_name,
             'PATH_INFO': self.path,
@@ -101,13 +116,15 @@ class Method(object):
             'spore.formats': formats,
         }
 
-        for mw in self.spore_obj.middlewares:
+        for mw in self.middlewares:
             if mw[0](env):
                 cb = mw[1](env)
                 if cb:
                     cb_response.append(cb)
 
-        http_response = Request(env).execute()
+        request = Request(env)
+        http_response = self.user_agent.request(request())
+        setattr(http_response, 'env', env)
 
         if self.expected_status:
             http_status = int(http_response.status)
@@ -131,6 +148,7 @@ class Method(object):
 
         stuff_remains = kset.difference(
             self.required_params + self.optional_params)
+
         if stuff_remains:
             raise errors.SpyreMethodCall(stuff_remains)
 

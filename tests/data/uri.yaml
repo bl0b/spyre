@@ -1,27 +1,27 @@
 -
-  uri: http://example.com/
+  uri: http://example.com:80/
   add_env:
     HTTP_HOST: example.com
     SCRIPT_NAME: ''
 -
-  uri: http://example.com/foo%20bar
+  uri: http://example.com:80/foo%20bar
   add_env:
     HTTP_HOST: example.com
     SCRIPT_NAME: ''
     PATH_INFO: /foo bar
 -
-  uri: http://example.com/test.c
+  uri: http://example.com:80/test.c
   add_env:
     HTTP_HOST: example.com
     SCRIPT_NAME: /test.c
 -
-  uri: http://example.com/test.c/info
+  uri: http://example.com:80/test.c/info
   add_env:
     HTTP_HOST: example.com
     SCRIPT_NAME: /test.c
     PATH_INFO: /info
 -
-  uri: http://example.com/test?dynamic=daikuma
+  uri: http://example.com:80/test?dynamic=daikuma
   add_env:
     HTTP_HOST: example.com
     SCRIPT_NAME: /test
@@ -29,7 +29,7 @@
       - dynamic
       - daikuma
 -
-  uri: http://example.com/exec/
+  uri: http://example.com:80/exec
   add_env:
     HTTP_HOST: example.com
     SCRIPT_NAME: /exec/
@@ -40,7 +40,7 @@
 -
   uri: http://:80/
 -
-  uri: http://example.com/?aco=tie
+  uri: http://example.com:80/?aco=tie
   add_env:
     HTTP_HOST: example.com
     SCRIPT_NAME: ''
@@ -48,13 +48,13 @@
       - aco
       - tie
 -
-  uri: http://example.com/foo%20bar/baz%20quux
+  uri: http://example.com:80/foo%20bar/baz%20quux
   add_env:
     HTTP_HOST: example.com
     SCRIPT_NAME: /foo bar
     PATH_INFO: /baz quux
 -
-  uri: http://example.com/foo/bar/
+  uri: http://example.com:80/foo/bar
   add_env:
     HTTP_HOST: example.com
     SCRIPT_NAME: ''

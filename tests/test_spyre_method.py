@@ -1,6 +1,7 @@
 from unittest2 import TestCase
+from httpclient import HTTPClient
 from spyre.method import Method
-from spyre.core import base
+from spyre.core import Spore
 from spyre import errors
 import os.path
 
@@ -11,9 +12,14 @@ base_url = 'https://api.github.com/'
 f = open(spec_file, 'r')
 spec_str = f.read()
 f.close()
-base = base(spec_str, base_url)
+base = Spore(spec_str, base_url)
+
 
 class TestSpyreMethod(TestCase):
+
+    def setUp(self):
+        self.user_agent = HTTPClient()
+        self.url = 'http://github.com/api/v2/json/'
 
     def test_required_attr(self):
         method_name = 'test'
@@ -21,21 +27,22 @@ class TestSpyreMethod(TestCase):
 
         self.failUnlessRaises(errors.SpyreMethodBuilder,
                 Method, method_name,
-                method_desc, base)
+                method_desc, base_url=self.url, user_agent=self.user_agent)
 
         method_desc['method'] = 'GET'
         self.failUnlessRaises(errors.SpyreMethodBuilder,
                 Method, method_name,
-                method_desc, base)
+                method_desc, base_url=self.url, user_agent=self.user_agent)
 
-        method_desc['path'] = '/users/:username'
+        method_desc['path'] = '/user/show/:username'
         method_desc['required_params'] = ['username']
         method_desc['expected_status'] = [200, 404, 406]
 
-        method = Method(method_name, method_desc, base)
+        method = Method(method_name, method_desc, base_url=self.url, user_agent=self.user_agent)
         self.assertTrue(method)
         resp = method(username='franckcuny')
-        self.assertEqual(resp.status, '200')
+        print resp.content
+        self.assertEqual(resp.status, 200)
 
     def test_optional_attr(self):
         method_name = 'test'
@@ -43,7 +50,7 @@ class TestSpyreMethod(TestCase):
                 'required_params': ['username']}
         base_url = 'http://github.com/api/v2/'
 
-        method = Method(method_name, method_desc, base)
+        method = Method(method_name, method_desc, base_url=self.url, user_agent=self.user_agent)
         self.assertTrue(method)
 
         self.failUnlessRaises(errors.SpyreMethodCall, method)

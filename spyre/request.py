@@ -1,70 +1,59 @@
-import httplib2
-import urllib
+import http
 import re
-from spyre.response import Response
 from itertools import izip
-
-
-def _requestproperty(key, default=None):
-
-    def fget(self):
-        return self.env.get(key, default)
-
-    def fset(self, value):
-        self.env[key] = value
-        return value
-
-    return property(fget, fset)
 
 
 class Request(object):
 
-    port = _requestproperty('SERVER_PORT', 80)
-    host = _requestproperty('SERVER_NAME', '')
-    path = _requestproperty('PATH_INFO', '')
-    scheme = _requestproperty('spore.url_scheme', 'http')
-
     def __init__(self, env):
         self.env = env
+        self.scheme = self.env.get('spore.url_scheme', 'http')
+        self.port = self.env.get('SERVER_PORT', '80')
+        self.path = self.env.get('PATH_INFO', '')
+        self.method = self.env.get('REQUEST_METHOD')
+        self._build_url()
 
-    def execute(self):
-        final_url = self._finalize()
-        http_response = self._execute_http_request(final_url)
-        return http_response
+    @property
+    def host(self):
+        host = self.env.get('HTTP_HOST', None)
+        if host is None:
+            host = self.env.get('SERVER_NAME', '')
+        return host
 
-    def _finalize(self):
-        self._expand()
-        final_url = self.base()
-        query_string = self.env.get('QUERY_STRING', None)
-        if query_string is not None:
-            final_url = "%s?%s" % (final_url, query_string)
-        return final_url
+    @property
+    def uri_base(self):
+        return str(self.url)
 
     @property
     def script_name(self):
-        script_name = self.env.get('SCRIPT_NAME', '')
-        if script_name == '' and self._path_info_start_with_slash() is False:
+        script_name = self.env.get('SCRIPT_NAME', None)
+
+        if script_name is None or script_name == '':
             script_name = '/'
         return script_name
 
-    @property
-    def http_host(self):
-        host = self.env.get('HTTP_HOST', None)
-        if host is None:
-            host = ("%s:%i" % (self.host, self.port))
-        return host
+    def __call__(self):
+        # XXX rework this part
+        self._expand()
+        self.url.path.append(self.path)
+        self._query_path()
+        # TODO headers etc
+        request = http.Request(self.method, str(self.url))
+        return request
 
-    def base(self):
-        final_url = ("%s://%s%s%s" % (self.scheme, self.http_host,
-            urllib.quote(self.script_name, '/'), urllib.quote(self.path, '/')))
-        return final_url
+    def _build_url(self):
+        # TODO username password query params
+        self.url = http.Url(
+            scheme=self.scheme,
+            host=self.host,
+            port=self.port,
+            path=self.script_name,
+        )
 
-    def _path_info_start_with_slash(self):
-        path_info = self.env.get('PATH_INFO', None)
-        if path_info is not None and len(path_info) > 0 and path_info[0] == '/':
-            return True
-        else:
-            return False
+    def _query_path(self):
+        query_string = self.env.get('QUERY_STRING', None)
+        if query_string is not None:
+            self.url.query = query_string
 
     def _expand(self):
         params = self.env.get('spore.params', None)
@@ -73,12 +62,12 @@ class Request(object):
             return
 
         path_info = self.path
-        headers = self.env.get('spore.headers', None)
-        form_data = self.env.get('spore.form_data', None)
+#        headers = self.env.get('spore.headers', None)
+#        form_data = self.env.get('spore.form_data', None)
 
         query = []
-        form = {}
-        headers = []
+#        form = {}
+#        headers = []
 
         for k, v in izip(params[::2], params[1::2]):
             if path_info:
@@ -86,20 +75,11 @@ class Request(object):
                 if changes:
                     continue
 
-            query.append("%s=%s" % (k,v))
+            query.append((k, v))
 
         path_info = re.sub(":\w+", '', path_info)
         self.path = path_info
 
+        # TODO check what can be moved to Uri
         if query:
-            self.env['QUERY_STRING'] = '&'.join(query)
-
-    def _execute_http_request(self, final_url):
-        h = httplib2.Http(disable_ssl_certificate_validation=True)
-        headers, content = h.request(final_url, self.env.get('REQUEST_METHOD'))
-
-        status = headers['status']
-        del headers['status']
-        http_response = Response(self.env, status, headers, content)
-
-        return http_response
+            self.env['QUERY_STRING'] = query

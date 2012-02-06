@@ -1,5 +1,5 @@
 import __future__
-from core import base
+from core import Spore
 from errors import *
 import os.path
 
@@ -12,7 +12,7 @@ def new_from_spec(spec_file, base_url=None):
 
 def new_from_string(spec_string, base_url=None):
     try:
-        spore = base(spec_string=spec_string, base_url=base_url)
+        spore = Spore(spec_string=spec_string, base_url=base_url)
     except Exception, e:
         raise SpyreObjectBuilder(e)
     return spore

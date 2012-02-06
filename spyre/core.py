@@ -1,17 +1,18 @@
 import __future__
 import json
-from spyre import errors
+import errors
+from httpclient import HTTPClient
 from spyre.method import Method
 
 
-class base(object):
-
-    authentication = None
-    middlewares = []
-    formats = []
+class Spore(object):
 
     def __init__(self, spec_string=None, base_url=None):
+        self.authentication = None
+        self.middlewares = []
+        self.formats = []
         self._methods = []
+        self.user_agent = HTTPClient()
 
         if spec_string is not None:
             try:
@@ -22,8 +23,9 @@ class base(object):
         self._init_meta(spec, base_url)
         self._init_methods(spec)
 
-    # XXX method to list available SPORE methods
-    # XXX method to search for a given method
+    # TODO method to validate spec
+    # TODO method to list available SPORE methods
+    # TODO method to search for a given method
     def _init_meta(self, spec, base_url=None):
         self.name = spec['name']  # XXX see later what to do with this
 
@@ -49,9 +51,15 @@ class base(object):
 
     def _attach_method(self, method_name, method_desc):
         try:
-            new_method = Method(method_name, method_desc, self)
+            new_method = Method(
+                method_name,
+                method_desc,
+                base_url=self.base_url,
+                user_agent=self.user_agent,
+                middlewares=self.middlewares
+            )
         except Exception, e:
-            raise RuntimeError("foo")  # XXX meh
+            raise RuntimeError(e)  # XXX meh
 
         setattr(self, method_name, new_method)
         self._methods.append(method_name)

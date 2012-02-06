@@ -1,6 +1,6 @@
 from unittest2 import TestCase
 from spyre import new_from_spec, new_from_string
-from spyre.core import base
+from spyre.core import Spore
 from http import Response
 from spyre import errors
 import os.path
@@ -36,7 +36,7 @@ class TestSpyre(TestCase):
         f.close()
         spore = new_from_string(spec_str)
         self.assertTrue(spore)
-        self.assertIsInstance(spore, base)
+        self.assertIsInstance(spore, Spore)
 
     def test_inexisting_spec(self):
         self.assertRaises(errors.SpyreObjectBuilder, new_from_spec, ('foo'))
