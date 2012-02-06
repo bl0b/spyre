@@ -1,6 +1,6 @@
 -
   host: 'localhost'
-  base: 'http://localhost'
+  base: 'http://localhost/'
 -
   script_name: '/foo'
   host: 'localhost'
@@ -12,27 +12,27 @@
 -
   scheme: 'http'
   host: 'localhost:91'
-  base: 'http://localhost:91'
+  base: 'http://localhost:91/'
 -
   scheme: 'http'
   host: 'example.com'
-  base: 'http://example.com'
+  base: 'http://example.com/'
 -
   scheme: 'https'
   host: 'example.com'
-  base: 'https://example.com'
+  base: 'https://example.com/'
 -
   scheme: 'http'
   server_name: 'example.com'
   server_port: 80
-  base: 'http://example.com:80'
+  base: 'http://example.com:80/'
 -
   scheme: 'http'
   server_name: 'example.com'
   server_port: 8080
-  base: 'http://example.com:8080'
+  base: 'http://example.com:8080/'
 -
   host: 'foobar.com'
   server_name: 'example.com'
   server_port: 8080
-  base: 'http://foobar.com:8080'
+  base: 'http://foobar.com:8080/'
