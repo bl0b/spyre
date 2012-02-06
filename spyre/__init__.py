@@ -1,5 +1,5 @@
 import __future__
-from core import Spore
+from spyre.core import Spore
 from errors import *
 import os.path
 
