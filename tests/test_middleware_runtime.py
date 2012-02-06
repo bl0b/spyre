@@ -1,7 +1,5 @@
 from unittest2 import TestCase
 from spyre import new_from_spec
-import spyre.middleware
-import spyre.middleware.runtime
 import os.path
 
 
